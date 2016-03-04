@@ -28,7 +28,7 @@
           <div class="list">
             <div class="padding-top padding-left"><p>Enter your GitHub Username below to connect.</p></div>
             <label class="item item-input">
-              <input type="text" placeholder="Username" ng-model="username">
+              <input type="text" placeholder="Username" ng-model="user.name">
             </label>
           </div>
           <div class="padding">
@@ -61,6 +61,7 @@
           <p>Example of Ionic tabs. Navigate to each tab, and
           navigate to child views of each tab and notice how
           each tab has its own navigation history.</p>
+          <button class="button button-block button-royal button-outline" ng-click="scrape()">Scrape!</button>  
         </ion-content>
       </ion-view>
     </script>
@@ -71,6 +72,7 @@
           <h3>Create hybrid mobile apps with the web technologies you love.</h3>
           <p>Free and open source, Ionic offers a library of mobile-optimized HTML, CSS and JS components for building highly interactive apps.</p>
           <p>Built with Sass and optimized for AngularJS.</p>
+          <button class="button button-block button-royal button-outline" ng-click="disconnect(user)">Disconnect!</button> 
         </ion-content>
       </ion-view>
     </script>
