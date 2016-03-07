@@ -49,10 +49,12 @@ ged.factory("UserInfo", function ($http, $filter) {
     factory.company = "";
     factory.email = "";
     factory.bio = "";
-    factory.lastUpdated = "";
     
     factory.stats = {
-        streak: 0
+        streak: 0,
+        streakOngoing: false,
+        committedToday: false,
+        lastUpdated = ""
     };
     
     factory.validate = function () {
@@ -93,7 +95,7 @@ ged.factory("UserInfo", function ($http, $filter) {
         info.company = response.data.company;
         info.email = response.data.email;
         info.bio = response.data.bio;
-        info.lastUpdated = response.data.updated_at;
+        info.stats.lastUpdated = response.data.updated_at;
         info.getRepos().then(function(response){
             info.repos = response.data;
         }, function(err){
