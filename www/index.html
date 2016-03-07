@@ -8,11 +8,14 @@
 
     <link href="//code.ionicframework.com/nightly/css/ionic.css" rel="stylesheet">
     <script src="//code.ionicframework.com/nightly/js/ionic.bundle.js"></script>
+    <script src = "https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+
     <script src="js/app.js"></script>
     <script src="cordova.js"></script>
   </head>
 
   <body>
+      
     <ion-nav-bar class="bar-royal">
       <ion-nav-back-button class="button-icon ion-arrow-left-c"></ion-nav-back-button>
     </ion-nav-bar>
@@ -57,10 +60,18 @@
     <script id="templates/home.html" type="text/ng-template">
       <ion-view view-title="Home">
         <ion-content padding="true">
-          <p>Example of Ionic tabs. Navigate to each tab, and
-          navigate to child views of each tab and notice how
-          each tab has its own navigation history.</p>
-          <button class="button button-block button-royal button-outline" ng-click="scrape()">Scrape!</button>  
+            <ion-refresher pulling-text="Pull to refresh" on-refresh="refresh()">
+            </ion-refresher>
+            <div class="row">
+                <div class="col">
+                    <p>Example of Ionic tabs. Navigate to each tab, and navigate to child views of each tab and notice how each tab has its own navigation history.</p>
+                </div>
+            </div> 
+            <div class="row row-bottom">
+                <div class="col">
+                    <button class="button button-block button-royal button-outline" ng-click="scrape()">Scrape!</button>
+                </div>
+            </div>
         </ion-content>
       </ion-view>
     </script>

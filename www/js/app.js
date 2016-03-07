@@ -34,7 +34,7 @@ ged.config(function ($stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise('/connect');
 });
 
-ged.factory("UserInfo", function($http) {
+ged.factory("UserInfo", function ($http, $filter) {
     var factory = {};
     
     factory.username = "";
@@ -51,16 +51,36 @@ ged.factory("UserInfo", function($http) {
     factory.bio = "";
     factory.lastUpdated = "";
     
-    factory.validate = function(){
-        return $http.get("https://api.github.com/users/"+factory.username);
+    factory.stats = {
+        streak: 0
     };
     
-    factory.getRepos = function(){
-        return $http.get("https://api.github.com/users/"+factory.username+"/repos");
+    factory.validate = function () {
+        return $http.get("https://api.github.com/users/" + factory.username);
     };
     
-    factory.getContributions = function(){
+    factory.getRepos = function () {
+        return $http.get("https://api.github.com/users/" + factory.username + "/repos");
+    };
+    
+    factory.getContributions = function () {
         return $http.get("https://github.com/users/jazzkr/contributions");
+    };
+    
+    factory.updateContributions = function (info, response) {
+        var tmp = document.implementation.createHTMLDocument();
+        tmp.body.innerHTML = response.data;
+        var items = $(tmp.body.children).find('rect');
+        var contributions = [];
+        for (var i = 0; i < items.length; i++){
+            var contribution = {
+                date: $(items[i]).attr('data-date'),
+                count: $(items[i]).attr('data-count')
+            };
+            contributions.push(contribution);
+        };
+        info.contributions = contributions;
+        console.log(contributions);
     };
     
     factory.updateInfo = function(info, response){
@@ -80,25 +100,22 @@ ged.factory("UserInfo", function($http) {
             console.log("Error getting repos!");
         });
         info.getContributions().then(function(response){
-            console.log(response);
-            var tmp = document.implementation.createHTMLDocument();
-            tmp.body.innerHTML = response.data;
-            var items = $(tmp.body.children).find('day li');
-            var contributions = [];
-            for(var i = 0; i < items.length; i++){
-                var contribution = {
-                    date: $(items[i]).children('data-date')[0].innerText,
-                    count: $(items[i]).children('data-count')[0].innerText
-                };
-                contributions.push(contribution);
-            }
-            
+            info.updateContributions(info, response);
         }, function(err){
             console.log("Error getting contributions!");
         });
     };
     
-    
+    factory.populateStats = function(info){
+        var count = 0;
+        var d = new Date();
+        var dString = $filter('date')(d, "yyyy-MM-dd");
+        console.log(d);
+        console.log(dString);
+        for(var i = 0; i < info.contributions.length; i++){
+            
+        };
+    };
     
     return factory;
 });
@@ -125,4 +142,27 @@ ged.controller('UserCtrl', function ($scope, $state, UserInfo, $ionicLoading){
         console.log('Disconnect', UserInfo.username);
         $state.go('connect');
     };
+    
+    $scope.scrape = function(){
+/*        UserInfo.getContributions().then(function(response){
+            UserInfo.updateContributions(UserInfo, response);
+        }, function(err){
+            console.log("Error getting contributions!");
+            $state.go('connect');
+        });*/
+        UserInfo.populateStats(UserInfo);
+    };
+    
+    $scope.refresh = function() {
+        UserInfo.validate().then(function(response){
+            UserInfo.updateInfo(UserInfo, response);
+            console.log(UserInfo);
+        }, function(err){
+            UserInfo.validated = false;
+            $state.go('connect');
+        });
+        $scope.$broadcast('scroll.refreshComplete');
+        $scope.$apply();
+    };
+    
 });
