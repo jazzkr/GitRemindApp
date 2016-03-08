@@ -6,10 +6,12 @@
 
     <title>GitRemindApp</title>
 
-    <link href="//code.ionicframework.com/nightly/css/ionic.css" rel="stylesheet">
-    <script src="//code.ionicframework.com/nightly/js/ionic.bundle.js"></script>
+    <link href="/css/ionic.app.css" rel="stylesheet">
+    <link rel="stylesheet" href="lib/cal-heatmap/cal-heatmap.css">
+    <script src="/lib/ionic/js/ionic.bundle.js"></script>
     <script src = "https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-
+    <script type="text/javascript" src="lib/d3/d3.js"></script>
+    <script type="text/javascript" src="lib/cal-heatmap/cal-heatmap.js"></script>
     <script src="js/app.js"></script>
     <script src="cordova.js"></script>
   </head>
@@ -63,13 +65,34 @@
             <ion-refresher pulling-text="Pull to refresh" on-refresh="refresh()">
             </ion-refresher>
             <div class="row">
-                <div class="col">
-                    <p>Example of Ionic tabs. Navigate to each tab, and navigate to child views of each tab and notice how each tab has its own navigation history.</p>
-                </div>
+                <div class="col"><h3><center>Current Streak</center></h3></div>
             </div> 
+            <div class="row">
+                <div class="col col-center"><h1><center>{{stats.streak}}</center></h1></div>
+            </div>
+            <div class="row">
+                <div class="col col-center">
+                    <h4>Commits today: {{stats.commits_today}}</h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col col-center">
+                    <h4>Commits in the last year: {{stats.commits_year}}</h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <h5>Contribution Graph</h5>
+                    <div id="cal-heatmap"></div>
+                    <script type="text/javascript">
+	                   var cal = new CalHeatMap();
+	                   cal.init({});
+                    </script>
+                </div>
+            </div>
             <div class="row row-bottom">
                 <div class="col">
-                    <button class="button button-block button-royal button-outline" ng-click="scrape()">Scrape!</button>
+                    <center>Pull down to refresh stats</center>
                 </div>
             </div>
         </ion-content>
@@ -78,11 +101,18 @@
 
     <script id="templates/settings.html" type="text/ng-template">
       <ion-view view-title="Settings">
-        <ion-content padding="true">
-          <h3>Create hybrid mobile apps with the web technologies you love.</h3>
-          <p>Free and open source, Ionic offers a library of mobile-optimized HTML, CSS and JS components for building highly interactive apps.</p>
-          <p>Built with Sass and optimized for AngularJS.</p>
-          <button class="button button-block button-royal button-outline" ng-click="disconnect()">Disconnect!</button> 
+        <ion-content>
+            <ion-list>
+                <ion-item>
+                Other item 1
+                </ion-item>
+                <ion-item>
+                Other item 2
+                </ion-item>
+                <ion-item>
+                    <button class="button button-block button-royal button-outline" ng-click="disconnect()">Disconnect!</button>
+                </ion-item>
+            </ion-list>
         </ion-content>
       </ion-view>
     </script>

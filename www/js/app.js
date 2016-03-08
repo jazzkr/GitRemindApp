@@ -54,7 +54,7 @@ ged.factory("UserInfo", function ($http, $filter) {
         streak: 0,
         streakOngoing: false,
         committedToday: false,
-        lastUpdated = ""
+        lastUpdated: ""
     };
     
     factory.validate = function () {
@@ -123,6 +123,12 @@ ged.factory("UserInfo", function ($http, $filter) {
 });
 
 ged.controller('UserCtrl', function ($scope, $state, UserInfo, $ionicLoading){
+    
+    $scope.stats = {
+        streak: 0,
+        commits_today: 0,
+        commits_year: 0
+    };
     
     $scope.connect = function (user){
         UserInfo.username = user.name;
