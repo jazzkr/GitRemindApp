@@ -1,0 +1,44 @@
+{
+  "name": "angular-cal-heatmap-directive-async",
+  "version": "1.5.2",
+  "dependencies": {
+    "angular": "1.x",
+    "cal-heatmap": "~3.5.2"
+  },
+  "devDependencies": {
+    "angular-mocks": "~1.x",
+    "angular-scenario": "~1.x"
+  },
+  "homepage": "https://github.com/jazzkr/angular-cal-heatmap-directive",
+  "authors": [
+    "Shekhar Gulati (shekhargulati84@gmail.com)",
+    "Hoesel Markus (markus@linuxhacker.at)",
+    "Krisztian Kurucz (contact@krisztiankurucz.ca)"
+  ],
+  "description": "Angularjs directive to render cal-heatmap with async data support",
+  "main": "app/scripts/calHeatmap.js",
+  "keywords": [
+    "cal-heatmap",
+    "directive",
+    "angularjs"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test/components",
+    "test",
+    "tests"
+  ],
+  "_release": "1.5.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "1.5.2",
+    "commit": "6f1600a97fabba5a1e723e458230d550bbe4b893"
+  },
+  "_source": "https://github.com/jazzkr/angular-cal-heatmap-directive.git",
+  "_target": "1.5.2",
+  "_originalSource": "https://github.com/jazzkr/angular-cal-heatmap-directive.git",
+  "_direct": true
+}

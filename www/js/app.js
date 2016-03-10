@@ -1,4 +1,4 @@
-var ged = angular.module('ionicApp', ['ionic']);
+var ged = angular.module('ionicApp', ['ionic', 'calHeatmap']);
 
 ged.config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider
@@ -36,7 +36,7 @@ ged.config(function ($stateProvider, $urlRouterProvider) {
 
 ged.factory("UserInfo", function ($http, $filter) {
     var factory = {};
-    
+
     factory.username = "";
     factory.validated = false;
     factory.id = "";
@@ -49,26 +49,26 @@ ged.factory("UserInfo", function ($http, $filter) {
     factory.company = "";
     factory.email = "";
     factory.bio = "";
-    
+
     factory.stats = {
         streak: 0,
         streakOngoing: false,
         committedToday: false,
         lastUpdated: ""
     };
-    
+
     factory.validate = function () {
         return $http.get("https://api.github.com/users/" + factory.username);
     };
-    
+
     factory.getRepos = function () {
         return $http.get("https://api.github.com/users/" + factory.username + "/repos");
     };
-    
+
     factory.getContributions = function () {
         return $http.get("https://github.com/users/jazzkr/contributions");
     };
-    
+
     factory.updateContributions = function (info, response) {
         var tmp = document.implementation.createHTMLDocument();
         tmp.body.innerHTML = response.data;
@@ -84,7 +84,7 @@ ged.factory("UserInfo", function ($http, $filter) {
         info.contributions = contributions;
         console.log(contributions);
     };
-    
+
     factory.updateInfo = function(info, response){
         info.validated = true;
         info.id = response.data.id;
@@ -107,7 +107,7 @@ ged.factory("UserInfo", function ($http, $filter) {
             console.log("Error getting contributions!");
         });
     };
-    
+
     factory.populateStats = function(info){
         var count = 0;
         var d = new Date();
@@ -115,21 +115,29 @@ ged.factory("UserInfo", function ($http, $filter) {
         console.log(d);
         console.log(dString);
         for(var i = 0; i < info.contributions.length; i++){
-            
+
         };
     };
-    
+
     return factory;
 });
 
-ged.controller('UserCtrl', function ($scope, $state, UserInfo, $ionicLoading){
-    
+ged.controller('UserCtrl', function ($scope, $state, UserInfo, $ionicLoading, $window){
+
     $scope.stats = {
         streak: 0,
         commits_today: 0,
         commits_year: 0
     };
-    
+
+    $scope.cal_config = {
+      domain: 'year',
+      range: 1,
+      cellSize: Math.floor($window.innerWidth/52),
+      subDomainTextFormat: ' '
+    };
+    console.log($scope.cal_config.cellSize);
+
     $scope.connect = function (user){
         UserInfo.username = user.name;
         console.log('Connect', user);
@@ -145,12 +153,12 @@ ged.controller('UserCtrl', function ($scope, $state, UserInfo, $ionicLoading){
             $ionicLoading.hide();
         });
     };
-    
+
     $scope.disconnect = function(){
         console.log('Disconnect', UserInfo.username);
         $state.go('connect');
     };
-    
+
     $scope.scrape = function(){
 /*        UserInfo.getContributions().then(function(response){
             UserInfo.updateContributions(UserInfo, response);
@@ -160,7 +168,7 @@ ged.controller('UserCtrl', function ($scope, $state, UserInfo, $ionicLoading){
         });*/
         UserInfo.populateStats(UserInfo);
     };
-    
+
     $scope.refresh = function() {
         UserInfo.validate().then(function(response){
             UserInfo.updateInfo(UserInfo, response);
@@ -172,5 +180,5 @@ ged.controller('UserCtrl', function ($scope, $state, UserInfo, $ionicLoading){
         $scope.$broadcast('scroll.refreshComplete');
         $scope.$apply();
     };
-    
+
 });

@@ -12,12 +12,13 @@
     <script src = "https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script type="text/javascript" src="lib/d3/d3.js"></script>
     <script type="text/javascript" src="lib/cal-heatmap/cal-heatmap.js"></script>
+    <script type="text/javascript" src="lib/angular-cal-heatmap-directive-async/app/scripts/calHeatmap.js"></script>
     <script src="js/app.js"></script>
     <script src="cordova.js"></script>
   </head>
 
   <body>
-      
+
     <ion-nav-bar class="bar-royal">
       <ion-nav-back-button class="button-icon ion-arrow-left-c"></ion-nav-back-button>
     </ion-nav-bar>
@@ -66,7 +67,7 @@
             </ion-refresher>
             <div class="row">
                 <div class="col"><h3><center>Current Streak</center></h3></div>
-            </div> 
+            </div>
             <div class="row">
                 <div class="col col-center"><h1><center>{{stats.streak}}</center></h1></div>
             </div>
@@ -83,11 +84,7 @@
             <div class="row">
                 <div class="col">
                     <h5>Contribution Graph</h5>
-                    <div id="cal-heatmap"></div>
-                    <script type="text/javascript">
-	                   var cal = new CalHeatMap();
-	                   cal.init({});
-                    </script>
+                    <cal-heatmap config="{domain:'year',range:1,displayLegend:true}"></cal-heatmap>
                 </div>
             </div>
             <div class="row row-bottom">

@@ -40,7 +40,6 @@
     "commit": "4c973f2d061b393c8a02ffe502da74c6a0ea45f6"
   },
   "_source": "git://github.com/kamisama/cal-heatmap.git",
-  "_target": "^3.5.3",
-  "_originalSource": "cal-heatmap",
-  "_direct": true
+  "_target": "~3.5.2",
+  "_originalSource": "cal-heatmap"
 }
