@@ -34,81 +34,81 @@ ged.config(function ($stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise('/connect');
 });
 
-ged.factory("UserInfo", function ($http, $filter) {
-    var factory = {};
+ged.service("UserInfo", function ($http, $filter) {
 
-    factory.username = "";
-    factory.validated = false;
-    factory.id = "";
-    factory.avatar_url = "";
-    factory.url = "";
-    factory.html_url = "";
-    factory.repos = [];
-    factory.contributions = [];
-    factory.name = "";
-    factory.company = "";
-    factory.email = "";
-    factory.bio = "";
+    var username = "";
+    var validated = false;
+    var id = "";
+    var avatar_url = "";
+    var url = "";
+    var html_url = "";
+    var repos = [];
+    var contributions = [];
+    var heatmapJSON = [];
+    var name = "";
+    var company = "";
+    var email = "";
+    var bio = "";
 
-    factory.stats = {
+    var stats = {
         streak: 0,
         streakOngoing: false,
         committedToday: false,
         lastUpdated: ""
     };
 
-    factory.validate = function () {
+    this.validate = function () {
         return $http.get("https://api.github.com/users/" + factory.username);
     };
 
-    factory.getRepos = function () {
+    this.getReposFromGithub = function () {
         return $http.get("https://api.github.com/users/" + factory.username + "/repos");
     };
 
-    factory.getContributions = function () {
+    this.getContributionsFromGithub = function () {
         return $http.get("https://github.com/users/jazzkr/contributions");
     };
 
-    factory.updateContributions = function (info, response) {
+    this.updateContributions = function (response) {
         var tmp = document.implementation.createHTMLDocument();
         tmp.body.innerHTML = response.data;
         var items = $(tmp.body.children).find('rect');
-        var contributions = [];
+        var contributions_tmp = [];
         for (var i = 0; i < items.length; i++){
             var contribution = {
                 date: $(items[i]).attr('data-date'),
                 count: $(items[i]).attr('data-count')
             };
-            contributions.push(contribution);
+            contributions_tmp.push(contribution);
         };
-        info.contributions = contributions;
+        contributions = contributions_tmp;
         console.log(contributions);
     };
 
-    factory.updateInfo = function(info, response){
-        info.validated = true;
-        info.id = response.data.id;
-        info.avatar_url = response.data.avatar_url;
-        info.url = response.data.url;
-        info.html_url = response.data.html_url;
-        info.name = response.data.name;
-        info.company = response.data.company;
-        info.email = response.data.email;
-        info.bio = response.data.bio;
-        info.stats.lastUpdated = response.data.updated_at;
-        info.getRepos().then(function(response){
-            info.repos = response.data;
+    this.updateInfo = function(response){
+        validated = true;
+        id = response.data.id;
+        avatar_url = response.data.avatar_url;
+        url = response.data.url;
+        html_url = response.data.html_url;
+        name = response.data.name;
+        company = response.data.company;
+        email = response.data.email;
+        bio = response.data.bio;
+        stats.lastUpdated = response.data.updated_at;
+        getReposFromGithub().then(function(response){
+            repos = response.data;
         }, function(err){
             console.log("Error getting repos!");
         });
-        info.getContributions().then(function(response){
-            info.updateContributions(info, response);
+        getContributionsFromGithub().then(function(response){
+            updateContributions(response);
         }, function(err){
             console.log("Error getting contributions!");
         });
     };
 
-    factory.populateStats = function(info){
+    this.populateStats = function(info){
         var count = 0;
         var d = new Date();
         var dString = $filter('date')(d, "yyyy-MM-dd");
@@ -119,7 +119,17 @@ ged.factory("UserInfo", function ($http, $filter) {
         };
     };
 
-    return factory;
+    this.formatContributionsForHeatmap = function(){
+        console.log(contributions.length);
+        if(contributions.length <= 0) return;
+        for(var i = 0; i < contributions.length; i++){
+            var parts = contributions[i].data-date.split('-');
+            var d = new Date(parts[0], parts[1]-1, parts[2]);
+            var datestamp = Math.round(d.getTime() / 1000);
+            heatmapJSON[datestamp] = contributions[i].data-count;
+        };
+        console.log(heatmapJSON);
+    };
 });
 
 ged.controller('UserCtrl', function ($scope, $state, UserInfo, $ionicLoading, $window){
@@ -130,27 +140,33 @@ ged.controller('UserCtrl', function ($scope, $state, UserInfo, $ionicLoading, $w
         commits_year: 0
     };
 
+    $scope.cellSize = 12;
+    $scope.colLimit = 45 - Math.floor($window.innerWidth / $scope.cellSize);
     $scope.cal_config = {
       domain: 'year',
       range: 1,
-      cellSize: Math.floor($window.innerWidth/52),
+      cellSize: $scope.cellSize,
+      colLimit: $scope.colLimit,
+      considerMissingDataAsZero: true,
       subDomainTextFormat: ' '
     };
-    console.log($scope.cal_config.cellSize);
 
     $scope.connect = function (user){
-        UserInfo.username = user.name;
+        $scope.UserInfo.username = user.name;
         console.log('Connect', user);
         $ionicLoading.show({ template: '<ion-spinner></ion-spinner>' });
-        UserInfo.validate().then(function(response){
-            UserInfo.updateInfo(UserInfo, response);
+        $scope.UserInfo.validate().then(function(response){
+            $scope.UserInfo.updateInfo(UserInfo, response);
             $state.go('tabs.home');
             console.log(UserInfo);
         }, function(err){
-            UserInfo.validated = false;
+            $scope.UserInfo.validated = false;
             $scope.validated = false;
         }).finally(function(){
             $ionicLoading.hide();
+              //console.log("Formatting contributions!");
+              //console.log($scope.UserInfo.getContributions());
+              //$scope.UserInfo.formatContributionsForHeatmap(UserInfo);
         });
     };
 
