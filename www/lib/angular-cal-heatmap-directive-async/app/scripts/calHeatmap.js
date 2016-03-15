@@ -5,7 +5,6 @@ angular.module('calHeatmap', []).directive('calHeatmap', function () {
         var element = el[0];
         var cal = new CalHeatMap();
         var defaults = {
-
             // Presentation
             itemSelector: element,
             domain: 'month',
@@ -73,8 +72,10 @@ angular.module('calHeatmap', []).directive('calHeatmap', function () {
         };
         angular.extend(defaults, config);
         cal.init(defaults);
-        scope.$watchCollection('cal_config.data', function(newValue) {
-            cal.update(newValue);
+        scope.$watch('cal_config.data', function(newValue) {
+          console.log("updating cal-heatmap!");
+          console.log(newValue);
+          cal.update(newValue);
         } );
     }
     return {

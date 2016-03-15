@@ -36,6 +36,8 @@ ged.config(function ($stateProvider, $urlRouterProvider) {
 
 ged.service("UserInfo", function ($http, $filter) {
 
+    var UserInfo = this;
+
     var username = "";
     var validated = false;
     var id = "";
@@ -44,7 +46,6 @@ ged.service("UserInfo", function ($http, $filter) {
     var html_url = "";
     var repos = [];
     var contributions = [];
-    var heatmapJSON = [];
     var name = "";
     var company = "";
     var email = "";
@@ -54,19 +55,24 @@ ged.service("UserInfo", function ($http, $filter) {
         streak: 0,
         streakOngoing: false,
         committedToday: false,
-        lastUpdated: ""
+        lastUpdated: "",
+        heatmapJSON: []
+    };
+
+    this.setUsername = function(name) {
+        username = name;
     };
 
     this.validate = function () {
-        return $http.get("https://api.github.com/users/" + factory.username);
+        return $http.get("https://api.github.com/users/" + username);
     };
 
     this.getReposFromGithub = function () {
-        return $http.get("https://api.github.com/users/" + factory.username + "/repos");
+        return $http.get("https://api.github.com/users/" + username + "/repos");
     };
 
     this.getContributionsFromGithub = function () {
-        return $http.get("https://github.com/users/jazzkr/contributions");
+        return $http.get("https://github.com/users/" + username + "/contributions");
     };
 
     this.updateContributions = function (response) {
@@ -96,15 +102,18 @@ ged.service("UserInfo", function ($http, $filter) {
         email = response.data.email;
         bio = response.data.bio;
         stats.lastUpdated = response.data.updated_at;
-        getReposFromGithub().then(function(response){
+        this.getReposFromGithub().then(function(response){
             repos = response.data;
         }, function(err){
             console.log("Error getting repos!");
         });
-        getContributionsFromGithub().then(function(response){
-            updateContributions(response);
+        this.getContributionsFromGithub().then(function(response){
+            UserInfo.updateContributions(response);
         }, function(err){
             console.log("Error getting contributions!");
+        }).finally(function(){
+          console.log("Formatting contributions!");
+          UserInfo.formatContributionsForHeatmap();
         });
     };
 
@@ -120,53 +129,66 @@ ged.service("UserInfo", function ($http, $filter) {
     };
 
     this.formatContributionsForHeatmap = function(){
-        console.log(contributions.length);
+        var dataInJSON = [];
         if(contributions.length <= 0) return;
         for(var i = 0; i < contributions.length; i++){
-            var parts = contributions[i].data-date.split('-');
+            var parts = contributions[i].date.split('-');
             var d = new Date(parts[0], parts[1]-1, parts[2]);
             var datestamp = Math.round(d.getTime() / 1000);
-            heatmapJSON[datestamp] = contributions[i].data-count;
+            dataInJSON[String(datestamp)] = parseInt(contributions[i].count);
+            console.log("Original: ", contributions[i].date);
+            console.log("Timestamp'd: ", datestamp);
         };
-        console.log(heatmapJSON);
+        stats.heatmapJSON = dataInJSON;
     };
+
+    this.getJSON = function() {
+      return stats.heatmapJSON;
+    }
 });
 
 ged.controller('UserCtrl', function ($scope, $state, UserInfo, $ionicLoading, $window){
+
+    $scope.info = UserInfo;
 
     $scope.stats = {
         streak: 0,
         commits_today: 0,
         commits_year: 0
-    };
+      };
 
     $scope.cellSize = 12;
-    $scope.colLimit = 45 - Math.floor($window.innerWidth / $scope.cellSize);
+    $scope.colLimit = 10 - Math.floor($window.innerWidth / $scope.cellSize);
+    $scope.maxDate = new Date(Date.now());
+    $scope.minDate = new Date($scope.maxDate);
+    $scope.minDate.setDate($scope.minDate.getDate() - 365);
+
     $scope.cal_config = {
-      domain: 'year',
-      range: 1,
+      domain: 'month',
+      range: 13,
       cellSize: $scope.cellSize,
-      colLimit: $scope.colLimit,
-      considerMissingDataAsZero: true,
-      subDomainTextFormat: ' '
+      colLimit: 4,
+      start: $scope.minDate,
+      minDate: $scope.minDate,
+      maxDate: $scope.maxDate,
+      considerMissingDataAsZero: false,
+      subDomainTextFormat: ' ',
+      data: []
     };
 
     $scope.connect = function (user){
-        $scope.UserInfo.username = user.name;
+        $scope.info.setUsername(user.name)
         console.log('Connect', user);
         $ionicLoading.show({ template: '<ion-spinner></ion-spinner>' });
-        $scope.UserInfo.validate().then(function(response){
-            $scope.UserInfo.updateInfo(UserInfo, response);
+        $scope.info.validate().then(function(response){
+            $scope.info.updateInfo(response);
             $state.go('tabs.home');
             console.log(UserInfo);
         }, function(err){
-            $scope.UserInfo.validated = false;
+            $scope.info.validated = false;
             $scope.validated = false;
         }).finally(function(){
             $ionicLoading.hide();
-              //console.log("Formatting contributions!");
-              //console.log($scope.UserInfo.getContributions());
-              //$scope.UserInfo.formatContributionsForHeatmap(UserInfo);
         });
     };
 
@@ -182,19 +204,24 @@ ged.controller('UserCtrl', function ($scope, $state, UserInfo, $ionicLoading, $w
             console.log("Error getting contributions!");
             $state.go('connect');
         });*/
-        UserInfo.populateStats(UserInfo);
+        info.populateStats(UserInfo);
     };
 
     $scope.refresh = function() {
-        UserInfo.validate().then(function(response){
-            UserInfo.updateInfo(UserInfo, response);
+        $scope.info.validate().then(function(response){
+            $scope.info.updateInfo(response);
             console.log(UserInfo);
         }, function(err){
-            UserInfo.validated = false;
+            $scope.info.validated = false;
             $state.go('connect');
         });
         $scope.$broadcast('scroll.refreshComplete');
         $scope.$apply();
     };
+
+    $scope.$watch('info.getJSON()', function(newData) {
+      $scope.cal_config.data = newData;
+      console.log("updated data!");
+    });
 
 });
