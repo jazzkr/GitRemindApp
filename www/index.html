@@ -99,17 +99,32 @@
     <script id="templates/settings.html" type="text/ng-template">
       <ion-view view-title="Settings">
         <ion-content>
-            <ion-list>
-                <ion-item>
-                Other item 1
-                </ion-item>
-                <ion-item>
-                Other item 2
-                </ion-item>
-                <ion-item>
-                    <button class="button button-block button-royal button-outline" ng-click="disconnect()">Disconnect!</button>
-                </ion-item>
-            </ion-list>
+            <ul class="list">
+                <li class="item item-toggle">
+                  Enable Notifications
+                  <label class="toggle toggle-royal">
+                    <input type="checkbox">
+                    <div class="track">
+                      <div class="handle">
+                      </div>
+                    </div>
+                  </label>
+                </li>
+                <li class="item item-select">
+                  Notification Interval
+                  <label class="item-input">
+                    <select>
+                      <option>Every 3 Hours</option>
+                      <option>Every 6 Hours</option>
+                      <option selected>Daily</option>
+                      <option>Weekly</option>
+                    </select>
+                  </label>
+                </li>
+                <li class="item">
+                  <button class="button button-block button-royal button-outline" ng-click="disconnect()">Disconnect!</button>
+                </li>
+            </ul>
         </ion-content>
       </ion-view>
     </script>
