@@ -116,11 +116,12 @@ ged.service("UserInfo", function ($http, $filter) {
         }).finally(function(){
           console.log("Formatting contributions!");
           UserInfo.formatContributionsForHeatmap();
-          UserInfo.populateStats();
         });
     };
 
     this.populateStats = function(){
+        console.log("Populating stats!")
+
         stats.streak = 0;
         stats.streakOngoing = true;
         stats.commits_today = -1;
@@ -129,31 +130,33 @@ ged.service("UserInfo", function ($http, $filter) {
         var d = new Date();
         var today = $filter('date')(d, "yyyy-MM-dd");
 
-        for(var i = info.contributions.length-1; i >= 0; i--){
-          if(today != info.contributions[i].date && stats.commits_today == -1) {
+        for(var i = contributions.length-1; i >= 0; i--){
+          if(today != contributions[i].date && stats.commits_today == -1) {
             continue;
           }
           //Calculate contributions for the day
-          if(today == info.contributions[i].date) {
-            stats.commits_today = info.contributions[i].count;
-            if (info.contributions[i].count > 0) {
+          if(today == contributions[i].date) {
+            stats.commits_today = contributions[i].count;
+            if (contributions[i].count > 0) {
               stats.committedToday = true;
             }
           }
           //Calculate streak going backwards from today
-          if(stats.streakOngoing && info.contributions[i].count > 0) {
+          if(stats.streakOngoing && contributions[i].count > 0) {
             stats.streak++;
           } else {
             stats.streakOngoing = false;
           }
           //Calculate contributions for the year
-          if(info.contributions[i].count > 0) {
+          if(contributions[i].count > 0) {
             stats.commits_year++;
           }
         };
+
         stats.lastUpdated = $filter('date')(d,"yyyy-MM-dd hh:mm a");
 
-        console.log(stats);
+        console.log("end of populating stats");
+        console.log(UserInfo.stats);
     };
 
     this.formatContributionsForHeatmap = function(){
@@ -172,7 +175,12 @@ ged.service("UserInfo", function ($http, $filter) {
 
     this.getJSON = function() {
       return stats.heatmapJSON;
-    }
+    };
+
+    this.getStats = function() {
+      UserInfo.populateStats();
+      return stats;
+    };
 });
 
 ged.controller('UserCtrl', function ($scope, $state, UserInfo, $ionicLoading, $window){
@@ -240,6 +248,11 @@ ged.controller('UserCtrl', function ($scope, $state, UserInfo, $ionicLoading, $w
     $scope.$watch('info.getJSON()', function(newData) {
       $scope.cal_config.data = newData;
       console.log("updated data!");
+    });
+
+    $scope.$watch('info.getStats()', function(newStats) {
+      $scope.stats = newStats;
+      console.log("updated stats!");
     });
 
 });

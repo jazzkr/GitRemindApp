@@ -58,7 +58,9 @@ angular.module('calHeatmap', []).directive('calHeatmap', function () {
               filled: '{count} {name} {connector} {date}'
             },
             //subDomainDateFormat: null,
-            //subDomainTextFormat: ' ',
+            subDomainTextFormat: function(date ,value) {
+		            return value;
+	          },
             //domainLabelFormat: null,
             legendTitleFormat: {
               lower: 'less than {min} {name}',
