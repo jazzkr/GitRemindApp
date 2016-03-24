@@ -53,6 +53,8 @@ ged.service("UserInfo", function ($http, $filter) {
 
     var stats = {
         streak: 0,
+        commits_today: 0,
+        commits_year: 0,
         streakOngoing: false,
         committedToday: false,
         lastUpdated: "",
@@ -114,18 +116,44 @@ ged.service("UserInfo", function ($http, $filter) {
         }).finally(function(){
           console.log("Formatting contributions!");
           UserInfo.formatContributionsForHeatmap();
+          UserInfo.populateStats();
         });
     };
 
-    this.populateStats = function(info){
-        var count = 0;
-        var d = new Date();
-        var dString = $filter('date')(d, "yyyy-MM-dd");
-        console.log(d);
-        console.log(dString);
-        for(var i = 0; i < info.contributions.length; i++){
+    this.populateStats = function(){
+        stats.streak = 0;
+        stats.streakOngoing = true;
+        stats.commits_today = -1;
+        stats.commits_year = 0;
 
+        var d = new Date();
+        var today = $filter('date')(d, "yyyy-MM-dd");
+
+        for(var i = info.contributions.length-1; i >= 0; i--){
+          if(today != info.contributions[i].date && stats.commits_today == -1) {
+            continue;
+          }
+          //Calculate contributions for the day
+          if(today == info.contributions[i].date) {
+            stats.commits_today = info.contributions[i].count;
+            if (info.contributions[i].count > 0) {
+              stats.committedToday = true;
+            }
+          }
+          //Calculate streak going backwards from today
+          if(stats.streakOngoing && info.contributions[i].count > 0) {
+            stats.streak++;
+          } else {
+            stats.streakOngoing = false;
+          }
+          //Calculate contributions for the year
+          if(info.contributions[i].count > 0) {
+            stats.commits_year++;
+          }
         };
+        stats.lastUpdated = $filter('date')(d,"yyyy-MM-dd hh:mm a");
+
+        console.log(stats);
     };
 
     this.formatContributionsForHeatmap = function(){
@@ -195,16 +223,6 @@ ged.controller('UserCtrl', function ($scope, $state, UserInfo, $ionicLoading, $w
     $scope.disconnect = function(){
         console.log('Disconnect', UserInfo.username);
         $state.go('connect');
-    };
-
-    $scope.scrape = function(){
-/*        UserInfo.getContributions().then(function(response){
-            UserInfo.updateContributions(UserInfo, response);
-        }, function(err){
-            console.log("Error getting contributions!");
-            $state.go('connect');
-        });*/
-        info.populateStats(UserInfo);
     };
 
     $scope.refresh = function() {
